@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <title>Entrada - Controle de seção</title>
+</head>
+
+<body>
+  <div class="container">
+    <h1>Bem-vindo ao Controle de seção</h1>
+    <h2>Entrada do Sistema</h2>
+    <input type="text" id="vendedor" placeholder="Digite seu nome">
+    <br>
+    <button onclick="entrar()">Entrar</button>
+
+    <div id="menu" class="menu" style="display:none;">
+      <a href="vestuario.html">Vesturário</a>
+      <a href="tenis.html">Tênis</a>
+      <a href="acessorios.html">Acessórios</a>
+    </div>
+  </div>
+<div class="imagem">
+
+  <script>
+    function entrar() {
+      const nome = document.getElementById("vendedor").value.trim();
+      if (nome === "") {
+        alert("Por favor, digite seu nome para entrar.");
+        return;
+      }
+      document.querySelector("h2").innerText = "Vendedor: " + nome;
+      document.getElementById("menu").style.display = "flex";
+    }
+  </script>
+</body>
+</html>

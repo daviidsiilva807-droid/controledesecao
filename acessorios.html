@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Acessórios</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f4f4f4; padding: 20px; }
+    h1 { margin-bottom: 20px; }
+    .input-area { margin-bottom: 20px; }
+    input, button, textarea, select { padding: 8px; font-size: 14px; }
+    button { margin-left: 10px; cursor: pointer; }
+    .produto { background: #fff; border: 1px solid #ccc; border-radius: 8px; padding: 15px; margin-bottom: 15px; }
+    .categorias { display: flex; gap: 15px; flex-wrap: wrap; margin-top: 10px; }
+    .categoria { display: flex; flex-direction: column; align-items: center; }
+    .categoria input { width: 60px; text-align: center; margin-top: 5px; border: 2px solid #ccc; border-radius: 5px; }
+    .categoria input.faltando { border-color: red; background: #ffe5e5; }
+    textarea { width: 100%; margin-top: 10px; resize: vertical; }
+    #finalizados { margin-top: 30px; padding: 15px; background: #e8ffe8; border: 2px solid #4CAF50; border-radius: 8px; }
+    #finalizados h2 { margin-top: 0; }
+  </style>
+</head>
+<body>
+  <h1>Controle de Acessórios</h1>
+  <div class="input-area">
+    <label for="codigo">Código do Produto:</label>
+    <input type="text" id="codigo" placeholder="Digite o código">
+    
+    <label for="tipo">Tipo de Acessório:</label>
+    <select id="tipo">
+      <option value="Boné">Boné</option>
+      <option value="Meia">Meia</option>
+      <option value="Bolsa">Bolsa</option>
+      <option value="Sunga">Sunga</option>
+      <option value="Mochila">Mochila</option>
+    </select>
+
+    <button onclick="adicionarProduto()">Adicionar</button>
+  </div>
+
+  <div id="listaProdutos"></div>
+
+  <div id="finalizados">
+    <h2>Produtos Finalizados</h2>
+    <div id="listaFinalizados"></div>
+  </div>
+
+  <script>
+    function adicionarProduto() {
+      const codigo = document.getElementById("codigo").value.trim();
+      const tipo = document.getElementById("tipo").value;
+      if (codigo === "") return;
+
+      const lista = document.getElementById("listaProdutos");
+      const produtoDiv = document.createElement("div");
+      produtoDiv.className = "produto";
+      produtoDiv.innerHTML = `<h3>Acessório código: ${codigo}</h3><p>Organizando: <strong>${tipo}</strong></p>`;
+
+      const categoriasDiv = document.createElement("div");
+      categoriasDiv.className = "categorias";
+
+      const bloco = document.createElement("div");
+      bloco.className = "categoria";
+
+      const inputArara = document.createElement("input");
+      inputArara.type = "number";
+      inputArara.placeholder = "Arara";
+      inputArara.addEventListener("input", () => {
+        if (inputArara.value === "" || inputArara.value === "0") {
+          inputArara.classList.add("faltando");
+        } else {
+          inputArara.classList.remove("faltando");
+        }
+      });
+
+      const inputEstoque = document.createElement("input");
+      inputEstoque.type = "number";
+      inputEstoque.placeholder = "Estoque";
+
+      bloco.innerHTML = `<span>${tipo}</span>`;
+      bloco.appendChild(inputArara);
+      bloco.appendChild(inputEstoque);
+      categoriasDiv.appendChild(bloco);
+
+      produtoDiv.appendChild(categoriasDiv);
+
+      const obs = document.createElement("textarea");
+      obs.placeholder = "Observações...";
+      produtoDiv.appendChild(obs);
+
+      // Caixinha de confirmação
+      const confirmacao = document.createElement("div");
+      confirmacao.innerHTML = `<label><input type="checkbox"> Confirmar OK</label>`;
+      const checkbox = confirmacao.querySelector("input");
+      checkbox.addEventListener("change", () => {
+        if (checkbox.checked) {
+          moverParaFinalizados(produtoDiv);
+        }
+      });
+      produtoDiv.appendChild(confirmacao);
+
+      lista.appendChild(produtoDiv);
+      document.getElementById("codigo").value = "";
+    }
+
+    function moverParaFinalizados(produtoDiv) {
+      const listaFinalizados = document.getElementById("listaFinalizados");
+      listaFinalizados.appendChild(produtoDiv);
+    }
+  </script>
+</body>
+</html>

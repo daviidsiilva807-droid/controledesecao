@@ -1,0 +1,74 @@
+* {
+   margin: 0;
+   padding: 0; 
+}
+
+body {
+      font-family: Arial, sans-serif;
+      background: url("img/malevola\ .png") no-repeat center fixed;
+      color: #fff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      z-index: 100;
+      background-size: cover;
+    }
+    .container {
+    
+      text-align: center;
+      background: rgba(0,0,0,0.4);
+      padding: 40px;
+      border-radius: 12px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.5);
+      
+    }
+    h1 {
+      font-size: 2.5em;
+      margin-bottom: 10px;
+    }
+    h2 {
+      font-size: 1.5em;
+      margin-bottom: 30px;
+    }
+    input {
+      padding: 10px;
+      font-size: 16px;
+      border-radius: 6px;
+      border: none;
+      margin-bottom: 20px;
+      width: 250px;
+      text-align: center;
+    }
+    button {
+      padding: 12px 20px;
+      font-size: 16px;
+      border: none;
+      border-radius: 6px;
+      background: #FFC107;
+      color: #333;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+    button:hover {
+      background: #FF9800;
+    }
+    .menu {
+      margin-top: 30px;
+      display: flex;
+      gap: 20px;
+      justify-content: center;
+    }
+    .menu a {
+      text-decoration: none;
+      padding: 15px 25px;
+      background: #fff;
+      color: #333;
+      border-radius: 8px;
+      font-weight: bold;
+      transition: 0.3s;
+    }
+    .menu a:hover {
+      background: #ddd;
+    }
