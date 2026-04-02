@@ -72,3 +72,23 @@ body {
     .menu a:hover {
       background: #ddd;
     }
+input {
+  width: 80%; /* <-- antes era 250px, agora ocupa 80% da tela */
+  max-width: 300px; /* limite para não ficar exagerado em telas grandes */
+}
+
+button {
+  width: 80%;
+  max-width: 200px;
+}
+@media (max-width: 600px) {
+  h1 {
+    font-size: 1.8em; /* reduz título em telas pequenas */
+  }
+  h2 {
+    font-size: 1.2em;
+  }
+  .container {
+    padding: 20px; /* menos espaço para caber melhor */
+  }
+}
