@@ -6,31 +6,41 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Entrada - Controle de seção</title>
 </head>
-
 <body>
   <div class="container">
     <h1>Bem-vindo ao Controle de seção</h1>
     <h2>Entrada do Sistema</h2>
-    <input type="text" id="vendedor" placeholder="Digite seu nome">
-    <br>
-    <button onclick="entrar()">Entrar</button>
 
-    <div id="menu" class="menu" style="display:none;">
-      <a href="vestuario.html">Vesturário</a>
-      <a href="tenis.html">Tênis</a>
-      <a href="acessorios.html">Acessórios</a>
-    </div>
+    <input type="text" id="login" placeholder="Digite seu login">
+    <input type="password" id="senha" placeholder="Digite sua senha">
+    <button type="button" onclick="entrar()">Entrar</button>
   </div>
 
+  <script src="auth-db.js"></script>
   <script>
+    AuthDB.garantirAdminPadrao();
+
+    const sessaoAtual = AuthDB.obterSessao();
+    if (sessaoAtual) {
+      window.location.href = "dashboard.html";
+    }
+
     function entrar() {
-      const nome = document.getElementById("vendedor").value.trim();
-      if (nome === "") {
-        alert("Por favor, digite seu nome para entrar.");
+      const login = document.getElementById("login").value.trim();
+      const senha = document.getElementById("senha").value;
+
+      if (login === "" || senha.trim() === "") {
+        alert("Por favor, preencha login e senha.");
         return;
       }
-      document.querySelector("h2").innerText = "Vendedor: " + nome;
-      document.getElementById("menu").style.display = "flex";
+
+      const resultado = AuthDB.autenticar(login, senha);
+      if (!resultado.ok) {
+        alert(resultado.mensagem);
+        return;
+      }
+
+      window.location.href = "dashboard.html";
     }
   </script>
 </body>

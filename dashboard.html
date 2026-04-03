@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard - Controle de Secao</title>
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: linear-gradient(rgba(0, 0, 0, 0.26), rgba(0, 0, 0, 0.26)), url("img/logoadidas.png") center / cover fixed no-repeat;
+      padding: 14px;
+      color: #111827;
+    }
+
+    .page {
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    .header {
+      background: #ffffff;
+      border: 1px solid #e5e7eb;
+      border-radius: 14px;
+      padding: 14px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+      margin-bottom: 14px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(1.4rem, 5vw, 2rem);
+    }
+
+    .welcome {
+      margin-top: 8px;
+      color: #374151;
+      font-size: 15px;
+      font-weight: bold;
+    }
+
+    .subtitle {
+      margin-top: 6px;
+      color: #4b5563;
+      font-size: 14px;
+    }
+
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 12px;
+    }
+
+    .card {
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 14px;
+      padding: 14px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.06);
+    }
+
+    .card h2 {
+      margin: 0;
+      font-size: 1.1rem;
+    }
+
+    .card p {
+      margin: 8px 0 0;
+      color: #4b5563;
+      font-size: 14px;
+    }
+
+    .links {
+      margin-top: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .link-btn {
+      min-height: 44px;
+      border-radius: 10px;
+      border: none;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 10px 12px;
+      font-weight: bold;
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+    .link-main {
+      background: #0f766e;
+      color: #fff;
+    }
+
+    .link-sub {
+      background: #eef2ff;
+      color: #1e3a8a;
+      border: 1px solid #c7d2fe;
+    }
+
+    .logout {
+      margin-top: 14px;
+      background: #e5e7eb;
+      color: #111827;
+    }
+
+    .admin-card {
+      margin-top: 12px;
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 14px;
+      padding: 14px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.06);
+      display: none;
+    }
+
+    .admin-form {
+      margin-top: 10px;
+      display: grid;
+      gap: 10px;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    }
+
+    .admin-field {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .admin-field label {
+      font-size: 14px;
+      font-weight: bold;
+      color: #334155;
+    }
+
+    .admin-field input {
+      min-height: 42px;
+      border: 1px solid #cbd5e1;
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-size: 14px;
+    }
+
+    .admin-actions {
+      margin-top: 10px;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .status {
+      margin-top: 10px;
+      font-size: 14px;
+      font-weight: bold;
+    }
+
+    .status.ok { color: #166534; }
+    .status.error { color: #b91c1c; }
+
+    .usuarios-lista {
+      margin-top: 10px;
+      border-top: 1px solid #e5e7eb;
+      padding-top: 10px;
+      font-size: 14px;
+      color: #334155;
+    }
+
+    .usuarios-lista ul {
+      margin: 6px 0 0;
+      padding-left: 18px;
+    }
+
+    @media (max-width: 700px) {
+      body { padding: 10px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="header">
+      <h1>&#128187; Dashboard</h1>
+      <div id="nomeVendedor" class="welcome">Vendedor: -</div>
+      <div class="subtitle">Escolha abaixo a area que deseja acessar.</div>
+    </div>
+
+    <div class="cards">
+      <section class="card">
+        <h2>&#128176; Vendas</h2>
+        <p>Calculo de meta mensal, comissao, valor por dia e proxima meta.</p>
+        <div class="links">
+          <a class="link-btn link-main" href="vendas.html">Ir para Vendas</a>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>&#128230; Secao</h2>
+        <p>Escolha o tipo de produto para registrar entrada e conferencia.</p>
+        <div class="links">
+          <a class="link-btn link-sub" href="vestuario.html">&#128085; Vestuario</a>
+          <a class="link-btn link-sub" href="tenis.html">&#128095; Tenis</a>
+          <a class="link-btn link-sub" href="acessorios.html">&#128717; Acessorios</a>
+        </div>
+      </section>
+    </div>
+
+    <section id="adminCard" class="admin-card">
+      <h2>&#128274; Administrador - Cadastro de vendedores</h2>
+      <p>Apenas o usuario administrador daviidsiilva807 pode criar novos logins.</p>
+
+      <div class="admin-form">
+        <div class="admin-field">
+          <label for="novoLogin">Novo login</label>
+          <input id="novoLogin" type="text" placeholder="Ex: maria.silva">
+        </div>
+        <div class="admin-field">
+          <label for="novaSenha">Senha</label>
+          <input id="novaSenha" type="password" placeholder="Minimo 4 caracteres">
+        </div>
+      </div>
+
+      <div class="admin-actions">
+        <button class="link-btn link-main" type="button" onclick="cadastrarVendedor()">Cadastrar vendedor</button>
+        <button class="link-btn link-sub" type="button" onclick="atualizarListaVendedores()">Atualizar lista</button>
+      </div>
+
+      <div id="statusAdmin" class="status"></div>
+
+      <div class="usuarios-lista">
+        <strong>Vendedores cadastrados:</strong>
+        <ul id="listaVendedores"></ul>
+      </div>
+    </section>
+
+    <button class="link-btn logout" type="button" onclick="sair()">Sair</button>
+  </div>
+
+  <script src="auth-db.js"></script>
+  <script>
+    const sessao = AuthDB.exigirLogin();
+    let ehAdmin = false;
+
+    function carregarVendedor() {
+      document.getElementById("nomeVendedor").textContent = `Vendedor: ${sessao.login}`;
+      ehAdmin = sessao.papel === "admin" && sessao.login.toLowerCase() === "daviidsiilva807";
+
+      if (ehAdmin) {
+        document.getElementById("adminCard").style.display = "block";
+        atualizarListaVendedores();
+      }
+    }
+
+    function setStatus(mensagem, tipo) {
+      const status = document.getElementById("statusAdmin");
+      status.textContent = mensagem;
+      status.className = `status ${tipo}`;
+    }
+
+    function cadastrarVendedor() {
+      if (!ehAdmin) {
+        return;
+      }
+
+      const novoLogin = document.getElementById("novoLogin").value.trim();
+      const novaSenha = document.getElementById("novaSenha").value;
+      const resultado = AuthDB.criarUsuarioVendedor(novoLogin, novaSenha, sessao.login);
+
+      if (!resultado.ok) {
+        setStatus(resultado.mensagem, "error");
+        return;
+      }
+
+      document.getElementById("novoLogin").value = "";
+      document.getElementById("novaSenha").value = "";
+      setStatus(resultado.mensagem, "ok");
+      atualizarListaVendedores();
+    }
+
+    function atualizarListaVendedores() {
+      if (!ehAdmin) {
+        return;
+      }
+
+      const vendedores = AuthDB.listarVendedores();
+      const lista = document.getElementById("listaVendedores");
+      lista.innerHTML = "";
+
+      if (vendedores.length === 0) {
+        const item = document.createElement("li");
+        item.textContent = "Nenhum vendedor cadastrado ainda.";
+        lista.appendChild(item);
+        return;
+      }
+
+      vendedores.forEach((vendedor) => {
+        const item = document.createElement("li");
+        item.textContent = `${vendedor.login} (criado por ${vendedor.criadoPor})`;
+        lista.appendChild(item);
+      });
+    }
+
+    function sair() {
+      AuthDB.sair();
+      window.location.href = "index.html";
+    }
+
+    carregarVendedor();
+  </script>
+</body>
+</html>

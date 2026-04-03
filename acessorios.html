@@ -26,6 +26,7 @@
     .categoria input.faltando { border-color: #e11d48; background: #ffe5e5; }
     textarea { width: 100%; min-height: 90px; margin-top: 10px; resize: vertical; border: 1px solid #ccc; border-radius: 8px; }
     #finalizados { margin-top: 24px; padding: 12px; background: #e8ffe8; border: 2px solid #4CAF50; border-radius: 10px; }
+    .back-link { display: inline-flex; min-height: 42px; align-items: center; justify-content: center; padding: 8px 12px; border-radius: 8px; text-decoration: none; background: #1d4ed8; color: #fff; font-weight: bold; margin-bottom: 12px; }
     .toggle-finalizados { width: 100%; background: #2e7d32; }
     #listaFinalizadosWrapper { margin-top: 10px; display: none; }
     .finalizado-item { background: #fff; border: 1px solid #c6e6c8; border-radius: 8px; margin-bottom: 10px; overflow: hidden; }
@@ -43,7 +44,8 @@
   </style>
 </head>
 <body>
-  <h1>Controle de Acessórios</h1>
+  <a class="back-link" href="dashboard.html">&#8592; Voltar ao Dashboard</a>
+  <h1>&#128717; Controle de Acessórios</h1>
   <div class="input-area">
     <label for="codigo">Código do Produto:</label>
     <input type="text" id="codigo" placeholder="Digite o código">
@@ -69,7 +71,10 @@
     </div>
   </div>
 
+  <script src="auth-db.js"></script>
   <script>
+    AuthDB.exigirLogin();
+
     function criarControleNumero(placeholder) {
       const container = document.createElement("div");
       container.className = "campo-quantidade";

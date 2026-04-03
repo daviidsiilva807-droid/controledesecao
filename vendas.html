@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Metas de Vendas</title>
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: linear-gradient(rgba(0, 0, 0, 0.28), rgba(0, 0, 0, 0.28)), url("img/logoadidas.png") center / cover fixed no-repeat;
+      color: #1f2937;
+      padding: 14px;
+    }
+
+    .page {
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    .header {
+      background: #ffffff;
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 14px;
+      margin-bottom: 14px;
+      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.06);
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(1.4rem, 5vw, 2rem);
+    }
+
+    .subtitle {
+      margin-top: 8px;
+      color: #4b5563;
+      font-size: 14px;
+    }
+
+    .form-grid {
+      display: grid;
+      gap: 10px;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      margin-top: 14px;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .field label {
+      font-weight: bold;
+      font-size: 14px;
+    }
+
+    .field input {
+      min-height: 42px;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      padding: 10px 12px;
+      font-size: 15px;
+    }
+
+    .actions {
+      margin-top: 12px;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    button {
+      min-height: 44px;
+      border: none;
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-size: 15px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .primary {
+      background: #0f766e;
+      color: #fff;
+    }
+
+    .secondary {
+      background: #e5e7eb;
+      color: #111827;
+    }
+
+    .summary-grid {
+      display: grid;
+      gap: 10px;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      margin-bottom: 14px;
+    }
+
+    .back-link {
+      display: inline-flex;
+      min-height: 42px;
+      align-items: center;
+      justify-content: center;
+      padding: 8px 12px;
+      border-radius: 8px;
+      text-decoration: none;
+      background: #1d4ed8;
+      color: #fff;
+      font-weight: bold;
+      margin-bottom: 12px;
+    }
+
+    .summary-card {
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 12px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+    }
+
+    .summary-label {
+      font-size: 12px;
+      color: #6b7280;
+      text-transform: uppercase;
+      letter-spacing: 0.02em;
+      margin-bottom: 8px;
+    }
+
+    .summary-value {
+      font-size: 1.1rem;
+      font-weight: bold;
+      color: #111827;
+    }
+
+    .table-wrap {
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+
+    th, td {
+      text-align: left;
+      padding: 10px;
+      border-bottom: 1px solid #f1f5f9;
+    }
+
+    th {
+      background: #f8fafc;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.02em;
+      color: #475569;
+    }
+
+    tr.atingida {
+      background: #ecfdf5;
+    }
+
+    .pill {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: bold;
+    }
+
+    .pill.ok { background: #bbf7d0; color: #14532d; }
+    .pill.wait { background: #e2e8f0; color: #334155; }
+
+    .hint {
+      margin-top: 8px;
+      font-size: 13px;
+      color: #4b5563;
+    }
+
+    @media (max-width: 700px) {
+      body { padding: 10px; }
+      table { font-size: 13px; }
+      th, td { padding: 8px; }
+      .actions button { width: 100%; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <a class="back-link" href="dashboard.html">&#8592; Voltar ao Dashboard</a>
+    <div class="header">
+      <h1>&#128176; Area do Vendedor - Meta Mensal</h1>
+      <p class="subtitle">Preencha seu faturamento atual e acompanhe comissao, valor diario necessario e distancia para a proxima meta.</p>
+
+      <div class="form-grid">
+        <div class="field">
+          <label for="faturamentoAtual">Faturamento atual no mes (R$)</label>
+          <input id="faturamentoAtual" type="number" min="0" step="0.01" value="0" placeholder="Ex: 35000">
+        </div>
+        <div class="field">
+          <label for="metaPessoal">Meta que deseja atingir (R$)</label>
+          <input id="metaPessoal" type="number" min="0" step="0.01" value="40000" placeholder="Ex: 56000">
+        </div>
+        <div class="field">
+          <label for="diasRestantes">Dias restantes no mes</label>
+          <input id="diasRestantes" type="number" min="1" step="1" value="1">
+        </div>
+      </div>
+
+      <div class="actions">
+        <button class="primary" type="button" onclick="calcularMetas()">Calcular metas</button>
+        <button class="secondary" type="button" onclick="preencherDiasAutomatico()">Atualizar dias automaticamente</button>
+      </div>
+      <p class="hint">Tabela de comissao: 40 mil = 0,50% | 46 mil = 1% | 50 mil = 1,2% | 56 mil = 1,5% | 64 mil = 2% | 72 mil = 2,25% | 80 mil = 2,5% | 88 mil = 2,6% | 96 mil = 2,7% | 104 mil = 2,8% | 112 mil = 2,9%</p>
+    </div>
+
+    <div class="summary-grid">
+      <div class="summary-card">
+        <div class="summary-label">Comissao estimada hoje</div>
+        <div id="comissaoAtual" class="summary-value">R$ 0,00</div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-label">Proxima meta oficial</div>
+        <div id="proximaMeta" class="summary-value">-</div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-label">Falta para proxima meta</div>
+        <div id="faltaProxima" class="summary-value">R$ 0,00</div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-label">Valor por dia para meta pessoal</div>
+        <div id="porDiaMetaPessoal" class="summary-value">R$ 0,00</div>
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Meta</th>
+            <th>Percentual</th>
+            <th>Falta para atingir</th>
+            <th>Necessario por dia</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="metasBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <script src="auth-db.js"></script>
+  <script>
+    AuthDB.exigirLogin();
+
+    const metas = [
+      { valor: 40000, percentual: 0.5 },
+      { valor: 46000, percentual: 1.0 },
+      { valor: 50000, percentual: 1.2 },
+      { valor: 56000, percentual: 1.5 },
+      { valor: 64000, percentual: 2.0 },
+      { valor: 72000, percentual: 2.25 },
+      { valor: 80000, percentual: 2.5 },
+      { valor: 88000, percentual: 2.6 },
+      { valor: 96000, percentual: 2.7 },
+      { valor: 104000, percentual: 2.8 },
+      { valor: 112000, percentual: 2.9 }
+    ];
+
+    function formatarMoeda(valor) {
+      return valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+    }
+
+    function formatarPercentual(valor) {
+      return `${valor.toLocaleString("pt-BR", { minimumFractionDigits: 1, maximumFractionDigits: 2 })}%`;
+    }
+
+    function calcularDiasRestantesMes() {
+      const hoje = new Date();
+      const ultimoDia = new Date(hoje.getFullYear(), hoje.getMonth() + 1, 0);
+      const umDia = 1000 * 60 * 60 * 24;
+      const diferenca = Math.ceil((ultimoDia - hoje) / umDia) + 1;
+      return Math.max(1, diferenca);
+    }
+
+    function preencherDiasAutomatico() {
+      document.getElementById("diasRestantes").value = calcularDiasRestantesMes();
+      calcularMetas();
+    }
+
+    function calcularMetas() {
+      const faturamentoAtual = Math.max(0, Number(document.getElementById("faturamentoAtual").value) || 0);
+      const metaPessoal = Math.max(0, Number(document.getElementById("metaPessoal").value) || 0);
+      const diasRestantes = Math.max(1, Number(document.getElementById("diasRestantes").value) || 1);
+
+      let faixaAtual = null;
+      for (const meta of metas) {
+        if (faturamentoAtual >= meta.valor) {
+          faixaAtual = meta;
+        }
+      }
+
+      const percentualAtual = faixaAtual ? faixaAtual.percentual : 0;
+      const comissaoAtual = faturamentoAtual * (percentualAtual / 100);
+
+      let proximaMeta = null;
+      for (const meta of metas) {
+        if (faturamentoAtual < meta.valor) {
+          proximaMeta = meta;
+          break;
+        }
+      }
+
+      const faltaParaProxima = proximaMeta ? Math.max(0, proximaMeta.valor - faturamentoAtual) : 0;
+      const faltaMetaPessoal = Math.max(0, metaPessoal - faturamentoAtual);
+      const porDiaMetaPessoal = faltaMetaPessoal / diasRestantes;
+
+      document.getElementById("comissaoAtual").textContent = `${formatarMoeda(comissaoAtual)} (${formatarPercentual(percentualAtual)})`;
+      document.getElementById("proximaMeta").textContent = proximaMeta ? `${formatarMoeda(proximaMeta.valor)} (${formatarPercentual(proximaMeta.percentual)})` : "Todas as metas oficiais atingidas";
+      document.getElementById("faltaProxima").textContent = formatarMoeda(faltaParaProxima);
+      document.getElementById("porDiaMetaPessoal").textContent = formatarMoeda(porDiaMetaPessoal);
+
+      const body = document.getElementById("metasBody");
+      body.innerHTML = "";
+
+      metas.forEach((meta) => {
+        const falta = Math.max(0, meta.valor - faturamentoAtual);
+        const porDia = falta / diasRestantes;
+        const atingida = falta === 0;
+
+        const tr = document.createElement("tr");
+        if (atingida) {
+          tr.className = "atingida";
+        }
+
+        tr.innerHTML = `
+          <td>${formatarMoeda(meta.valor)}</td>
+          <td>${formatarPercentual(meta.percentual)}</td>
+          <td>${formatarMoeda(falta)}</td>
+          <td>${formatarMoeda(porDia)}</td>
+          <td><span class="pill ${atingida ? "ok" : "wait"}">${atingida ? "Atingida" : "Falta atingir"}</span></td>
+        `;
+
+        body.appendChild(tr);
+      });
+    }
+
+    document.getElementById("faturamentoAtual").addEventListener("input", calcularMetas);
+    document.getElementById("metaPessoal").addEventListener("input", calcularMetas);
+    document.getElementById("diasRestantes").addEventListener("input", calcularMetas);
+
+    preencherDiasAutomatico();
+  </script>
+</body>
+</html>

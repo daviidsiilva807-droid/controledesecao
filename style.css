@@ -12,7 +12,7 @@
 
 body {
   font-family: Arial, sans-serif;
-  background: url("img/malevola\ .png") no-repeat center fixed;
+  background: url("img/logoadidas.png") no-repeat center fixed;
   background-size: cover;
   color: #fff;
   min-height: 100vh;
@@ -89,6 +89,12 @@ button:hover {
   border-radius: 10px;
   font-weight: bold;
   transition: background 0.2s ease;
+  gap: 8px;
+}
+
+.menu-icon {
+  font-size: 18px;
+  line-height: 1;
 }
 
 .menu a:hover {
