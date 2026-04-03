@@ -47,6 +47,106 @@
       font-size: 14px;
     }
 
+    .billing-banner {
+      margin-top: 12px;
+      border-radius: 12px;
+      padding: 12px 14px;
+      background: linear-gradient(135deg, #ecfeff, #e0f2fe);
+      border: 1px solid #bae6fd;
+      color: #0f172a;
+    }
+
+    .billing-banner strong {
+      display: block;
+      margin-bottom: 4px;
+      font-size: 14px;
+    }
+
+    .billing-line {
+      margin-top: 2px;
+      font-size: 13px;
+      color: #334155;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: bold;
+      margin-left: 8px;
+    }
+
+    .badge.ok { background: #bbf7d0; color: #14532d; }
+    .badge.warn { background: #fde68a; color: #92400e; }
+    .badge.off { background: #fecaca; color: #991b1b; }
+
+    .usuarios-lista {
+      margin-top: 10px;
+      display: grid;
+      gap: 10px;
+    }
+
+    .usuario-card {
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 12px;
+      background: #f8fafc;
+    }
+
+    .usuario-topo {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .usuario-nome {
+      font-weight: bold;
+      color: #0f172a;
+    }
+
+    .usuario-detalhes {
+      margin-top: 6px;
+      font-size: 13px;
+      color: #475569;
+      line-height: 1.5;
+    }
+
+    .usuario-acoes {
+      margin-top: 10px;
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .mini-btn {
+      min-height: 38px;
+      padding: 8px 10px;
+      border-radius: 10px;
+      border: 1px solid #cbd5e1;
+      background: #fff;
+      color: #0f172a;
+      font-size: 13px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .mini-btn.primary {
+      background: #0f766e;
+      color: #fff;
+      border-color: #0f766e;
+    }
+
+    .mini-btn.danger {
+      background: #fee2e2;
+      color: #991b1b;
+      border-color: #fecaca;
+    }
+
     .cards {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
@@ -163,19 +263,6 @@
     .status.ok { color: #166534; }
     .status.error { color: #b91c1c; }
 
-    .usuarios-lista {
-      margin-top: 10px;
-      border-top: 1px solid #e5e7eb;
-      padding-top: 10px;
-      font-size: 14px;
-      color: #334155;
-    }
-
-    .usuarios-lista ul {
-      margin: 6px 0 0;
-      padding-left: 18px;
-    }
-
     @media (max-width: 700px) {
       body { padding: 10px; }
     }
@@ -187,6 +274,7 @@
       <h1>&#128187; Dashboard</h1>
       <div id="nomeVendedor" class="welcome">Vendedor: -</div>
       <div class="subtitle">Escolha abaixo a area que deseja acessar.</div>
+      <div id="assinaturaBanner" class="billing-banner"></div>
     </div>
 
     <div class="cards">
@@ -233,7 +321,7 @@
 
       <div class="usuarios-lista">
         <strong>Vendedores cadastrados:</strong>
-        <ul id="listaVendedores"></ul>
+        <div id="listaVendedores"></div>
       </div>
     </section>
 
@@ -245,9 +333,34 @@
     const sessao = AuthDB.exigirLogin();
     let ehAdmin = false;
 
+    function formatarMoeda(valor) {
+      return Number(valor || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+    }
+
+    function formatarData(dataISO) {
+      if (!dataISO) {
+        return "-";
+      }
+
+      return new Date(dataISO).toLocaleDateString("pt-BR");
+    }
+
+    function montarBadge(status) {
+      const badge = document.createElement("span");
+      badge.className = `badge ${status === "ativo" ? "ok" : status === "vencido" ? "warn" : status === "vitalicio" ? "ok" : "off"}`;
+      badge.textContent = status === "ativo" ? "Ativo" : status === "vencido" ? "Vencido" : status === "vitalicio" ? "Vitalicio" : "Desativado";
+      return badge;
+    }
+
     function carregarVendedor() {
+      if (!sessao) {
+        return;
+      }
+
       document.getElementById("nomeVendedor").textContent = `Vendedor: ${sessao.login}`;
       ehAdmin = sessao.papel === "admin" && sessao.login.toLowerCase() === "daviidsiilva807";
+
+      atualizarBannerAssinatura();
 
       if (ehAdmin) {
         document.getElementById("adminCard").style.display = "block";
@@ -259,6 +372,55 @@
       const status = document.getElementById("statusAdmin");
       status.textContent = mensagem;
       status.className = `status ${tipo}`;
+    }
+
+    function atualizarBannerAssinatura() {
+      const banner = document.getElementById("assinaturaBanner");
+      const status = AuthDB.obterStatusUsuario(sessao.login);
+
+      if (!status) {
+        banner.innerHTML = "";
+        return;
+      }
+
+      const textoPrincipal = status.vitalicio
+        ? "Usuario vitalicio. Acesso liberado sem vencimento."
+        : status.ativo
+          ? `Plano ativo de ${status.planoDias} dias por ${formatarMoeda(status.planoValor || 20)}.`
+          : status.mensagem;
+
+      const linhaSecundaria = status.vitalicio
+        ? "Nao ha data de expiracao para este usuario."
+        : `Faltam ${status.diasRestantes} dia(s) para vencer. Vencimento em ${formatarData(status.assinaturaFimEm)}.`;
+
+      banner.innerHTML = `
+        <strong>${textoPrincipal}</strong>
+        <div class="billing-line">${linhaSecundaria}</div>
+      `;
+    }
+
+    function aplicarPlano(login, diasPlano) {
+      const resultado = AuthDB.ativarUsuario(login, diasPlano, sessao.login);
+      if (!resultado.ok) {
+        setStatus(resultado.mensagem, "error");
+        return;
+      }
+
+      setStatus(resultado.mensagem, "ok");
+      atualizarListaVendedores();
+      atualizarBannerAssinatura();
+    }
+
+    function desativarUsuario(login) {
+      const resultado = AuthDB.desativarUsuario(login, "Desativado manualmente por falta de pagamento.", sessao.login);
+      if (!resultado.ok) {
+        setStatus(resultado.mensagem, "error");
+        return;
+      }
+
+      setStatus(resultado.mensagem, "ok");
+      atualizarListaVendedores();
+      atualizarBannerAssinatura();
     }
 
     function cadastrarVendedor() {
@@ -291,16 +453,67 @@
       lista.innerHTML = "";
 
       if (vendedores.length === 0) {
-        const item = document.createElement("li");
-        item.textContent = "Nenhum vendedor cadastrado ainda.";
-        lista.appendChild(item);
+        const vazio = document.createElement("div");
+        vazio.textContent = "Nenhum vendedor cadastrado ainda.";
+        vazio.className = "usuario-detalhes";
+        lista.appendChild(vazio);
         return;
       }
 
       vendedores.forEach((vendedor) => {
-        const item = document.createElement("li");
-        item.textContent = `${vendedor.login} (criado por ${vendedor.criadoPor})`;
-        lista.appendChild(item);
+        const status = AuthDB.obterStatusUsuario(vendedor.login);
+        const card = document.createElement("div");
+        card.className = "usuario-card";
+
+        const topo = document.createElement("div");
+        topo.className = "usuario-topo";
+
+        const nome = document.createElement("div");
+        nome.className = "usuario-nome";
+        nome.textContent = vendedor.login;
+
+        const badge = montarBadge(status ? status.status : "desativado");
+        topo.appendChild(nome);
+        topo.appendChild(badge);
+
+        const detalhes = document.createElement("div");
+        detalhes.className = "usuario-detalhes";
+        const dias = status && status.vitalicio ? "vitalicio" : (status ? status.diasRestantes : 0);
+        const assinatura = status && status.vitalicio ? "sem vencimento" : (status && status.assinaturaFimEm ? formatarData(status.assinaturaFimEm) : "sem assinatura");
+        const planoTexto = status && status.vitalicio
+          ? "vitalicio"
+          : `${vendedor.planoDias || 30} dias (${formatarMoeda(vendedor.planoValor || 20)})`;
+        detalhes.textContent = `Criado por ${vendedor.criadoPor}. Plano atual: ${planoTexto}. Restam ${dias}. Vence em ${assinatura}.`;
+
+        const acoes = document.createElement("div");
+        acoes.className = "usuario-acoes";
+
+        const botao30 = document.createElement("button");
+        botao30.type = "button";
+        botao30.className = "mini-btn primary";
+        botao30.textContent = "Ativar 30 dias";
+        botao30.addEventListener("click", () => aplicarPlano(vendedor.login, 30));
+
+        const botao90 = document.createElement("button");
+        botao90.type = "button";
+        botao90.className = "mini-btn primary";
+        botao90.textContent = "Ativar 90 dias";
+        botao90.addEventListener("click", () => aplicarPlano(vendedor.login, 90));
+
+        const botaoDesativar = document.createElement("button");
+        botaoDesativar.type = "button";
+        botaoDesativar.className = "mini-btn danger";
+        botaoDesativar.textContent = "Desativar";
+        botaoDesativar.addEventListener("click", () => desativarUsuario(vendedor.login));
+
+        acoes.appendChild(botao30);
+        acoes.appendChild(botao90);
+        acoes.appendChild(botaoDesativar);
+
+        card.appendChild(topo);
+        card.appendChild(detalhes);
+        card.appendChild(acoes);
+        lista.appendChild(card);
       });
     }
 
@@ -309,7 +522,9 @@
       window.location.href = "index.html";
     }
 
-    carregarVendedor();
+    if (sessao) {
+      carregarVendedor();
+    }
   </script>
 </body>
 </html>

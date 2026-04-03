@@ -40,6 +40,27 @@
       font-size: 14px;
     }
 
+    .plan-banner {
+      margin-top: 12px;
+      border-radius: 12px;
+      padding: 12px 14px;
+      background: linear-gradient(135deg, #fef3c7, #fff7ed);
+      border: 1px solid #fdba74;
+      color: #7c2d12;
+      line-height: 1.45;
+    }
+
+    .plan-banner strong {
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    .inline-note {
+      margin-top: 6px;
+      font-size: 13px;
+      color: #4b5563;
+    }
+
     .form-grid {
       display: grid;
       gap: 10px;
@@ -122,6 +143,11 @@
       box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
     }
 
+    .summary-card.highlight {
+      border-color: #0f766e;
+      box-shadow: 0 6px 18px rgba(15, 118, 110, 0.14);
+    }
+
     .summary-label {
       font-size: 12px;
       color: #6b7280;
@@ -199,6 +225,7 @@
     <div class="header">
       <h1>&#128176; Area do Vendedor - Meta Mensal</h1>
       <p class="subtitle">Preencha seu faturamento atual e acompanhe comissao, valor diario necessario e distancia para a proxima meta.</p>
+      <div id="planBanner" class="plan-banner"></div>
 
       <div class="form-grid">
         <div class="field">
@@ -208,23 +235,29 @@
         <div class="field">
           <label for="metaPessoal">Meta que deseja atingir (R$)</label>
           <input id="metaPessoal" type="number" min="0" step="0.01" value="40000" placeholder="Ex: 56000">
+          <div id="objetivoNota" class="inline-note">Meta de objetivo nao fixada.</div>
         </div>
         <div class="field">
           <label for="diasRestantes">Dias restantes no mes</label>
           <input id="diasRestantes" type="number" min="1" step="1" value="1">
+        </div>
+        <div class="field">
+          <label for="valorMedioVenda">Valor medio por venda (R$)</label>
+          <input id="valorMedioVenda" type="number" min="0" step="0.01" value="0" placeholder="Ex: 120">
         </div>
       </div>
 
       <div class="actions">
         <button class="primary" type="button" onclick="calcularMetas()">Calcular metas</button>
         <button class="secondary" type="button" onclick="preencherDiasAutomatico()">Atualizar dias automaticamente</button>
+        <button class="secondary" type="button" onclick="alternarObjetivoFixo()">Fixar objetivo</button>
       </div>
       <p class="hint">Tabela de comissao: 40 mil = 0,50% | 46 mil = 1% | 50 mil = 1,2% | 56 mil = 1,5% | 64 mil = 2% | 72 mil = 2,25% | 80 mil = 2,5% | 88 mil = 2,6% | 96 mil = 2,7% | 104 mil = 2,8% | 112 mil = 2,9%</p>
     </div>
 
     <div class="summary-grid">
-      <div class="summary-card">
-        <div class="summary-label">Comissao estimada hoje</div>
+      <div class="summary-card highlight">
+        <div class="summary-label">Comissao total estimada</div>
         <div id="comissaoAtual" class="summary-value">R$ 0,00</div>
       </div>
       <div class="summary-card">
@@ -238,6 +271,14 @@
       <div class="summary-card">
         <div class="summary-label">Valor por dia para meta pessoal</div>
         <div id="porDiaMetaPessoal" class="summary-value">R$ 0,00</div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-label">Comissao por venda media</div>
+        <div id="comissaoPorVenda" class="summary-value">R$ 0,00</div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-label">Objetivo fixado</div>
+        <div id="objetivoFixado" class="summary-value">Nenhum objetivo fixado</div>
       </div>
     </div>
 
@@ -259,7 +300,8 @@
 
   <script src="auth-db.js"></script>
   <script>
-    AuthDB.exigirLogin();
+    const sessao = AuthDB.exigirLogin();
+    const OBJETIVO_FIXO_KEY = "controleSecao_objetivo_fixo_v1";
 
     const metas = [
       { valor: 40000, percentual: 0.5 },
@@ -283,6 +325,109 @@
       return `${valor.toLocaleString("pt-BR", { minimumFractionDigits: 1, maximumFractionDigits: 2 })}%`;
     }
 
+    function formatarData(dataISO) {
+      if (!dataISO) {
+        return "-";
+      }
+
+      return new Date(dataISO).toLocaleDateString("pt-BR");
+    }
+
+    function carregarObjetivoFixo() {
+      const bruto = localStorage.getItem(OBJETIVO_FIXO_KEY);
+      if (!bruto) {
+        return null;
+      }
+
+      try {
+        const dados = JSON.parse(bruto);
+        const valor = Math.max(0, Number(dados?.valor) || 0);
+        return valor > 0 ? dados : null;
+      } catch (erro) {
+        return null;
+      }
+    }
+
+    function salvarObjetivoFixo(valor) {
+      const dados = {
+        valor: Math.max(0, Number(valor) || 0),
+        criadoEm: new Date().toISOString()
+      };
+      localStorage.setItem(OBJETIVO_FIXO_KEY, JSON.stringify(dados));
+      return dados;
+    }
+
+    function limparObjetivoFixo() {
+      localStorage.removeItem(OBJETIVO_FIXO_KEY);
+    }
+
+    function atualizarInterfaceObjetivoFixo() {
+      const objetivo = carregarObjetivoFixo();
+      const inputMeta = document.getElementById("metaPessoal");
+      const nota = document.getElementById("objetivoNota");
+      const resumo = document.getElementById("objetivoFixado");
+      const botao = document.querySelector('button[onclick="alternarObjetivoFixo()"]');
+
+      if (!objetivo) {
+        inputMeta.readOnly = false;
+        nota.textContent = "Meta de objetivo nao fixada.";
+        resumo.textContent = "Nenhum objetivo fixado";
+        botao.textContent = "Fixar objetivo";
+        return;
+      }
+
+      inputMeta.value = objetivo.valor;
+      inputMeta.readOnly = true;
+      nota.textContent = `Meta fixada em ${formatarMoeda(objetivo.valor)}.`;
+      resumo.textContent = formatarMoeda(objetivo.valor);
+      botao.textContent = "Desfixar objetivo";
+    }
+
+    function alternarObjetivoFixo() {
+      const objetivoAtual = carregarObjetivoFixo();
+
+      if (objetivoAtual) {
+        limparObjetivoFixo();
+        atualizarInterfaceObjetivoFixo();
+        calcularMetas();
+        return;
+      }
+
+      const valor = Math.max(0, Number(document.getElementById("metaPessoal").value) || 0);
+      if (valor <= 0) {
+        alert("Informe uma meta de objetivo maior que zero antes de fixar.");
+        return;
+      }
+
+      salvarObjetivoFixo(valor);
+      atualizarInterfaceObjetivoFixo();
+      calcularMetas();
+    }
+
+    function atualizarBannerPlano() {
+      if (!sessao) {
+        return;
+      }
+
+      const status = AuthDB.obterStatusUsuario(sessao.login);
+      const banner = document.getElementById("planBanner");
+
+      if (!status) {
+        banner.textContent = "";
+        return;
+      }
+
+      if (status.vitalicio) {
+        banner.innerHTML = `<strong>Usuario vitalicio. Acesso liberado sem vencimento.</strong>Nao ha prazo de expiracao para este usuario.`;
+        return;
+      }
+
+      const valorPlano = status.planoDias === 90 ? 50 : 20;
+      banner.innerHTML = status.ativo
+        ? `<strong>Plano ativo de ${status.planoDias} dias por ${formatarMoeda(valorPlano)}.</strong>Faltam ${status.diasRestantes} dia(s) para expirar. Vencimento em ${formatarData(status.assinaturaFimEm)}.`
+        : `<strong>${status.mensagem}</strong>Entre em contato para regularizar o acesso.`;
+    }
+
     function calcularDiasRestantesMes() {
       const hoje = new Date();
       const ultimoDia = new Date(hoje.getFullYear(), hoje.getMonth() + 1, 0);
@@ -300,6 +445,7 @@
       const faturamentoAtual = Math.max(0, Number(document.getElementById("faturamentoAtual").value) || 0);
       const metaPessoal = Math.max(0, Number(document.getElementById("metaPessoal").value) || 0);
       const diasRestantes = Math.max(1, Number(document.getElementById("diasRestantes").value) || 1);
+      const valorMedioVenda = Math.max(0, Number(document.getElementById("valorMedioVenda").value) || 0);
 
       let faixaAtual = null;
       for (const meta of metas) {
@@ -322,11 +468,13 @@
       const faltaParaProxima = proximaMeta ? Math.max(0, proximaMeta.valor - faturamentoAtual) : 0;
       const faltaMetaPessoal = Math.max(0, metaPessoal - faturamentoAtual);
       const porDiaMetaPessoal = faltaMetaPessoal / diasRestantes;
+      const comissaoPorVenda = valorMedioVenda * (percentualAtual / 100);
 
       document.getElementById("comissaoAtual").textContent = `${formatarMoeda(comissaoAtual)} (${formatarPercentual(percentualAtual)})`;
       document.getElementById("proximaMeta").textContent = proximaMeta ? `${formatarMoeda(proximaMeta.valor)} (${formatarPercentual(proximaMeta.percentual)})` : "Todas as metas oficiais atingidas";
       document.getElementById("faltaProxima").textContent = formatarMoeda(faltaParaProxima);
       document.getElementById("porDiaMetaPessoal").textContent = formatarMoeda(porDiaMetaPessoal);
+      document.getElementById("comissaoPorVenda").textContent = valorMedioVenda > 0 ? `${formatarMoeda(comissaoPorVenda)} por venda` : "Informe o valor medio da venda";
 
       const body = document.getElementById("metasBody");
       body.innerHTML = "";
@@ -356,7 +504,10 @@
     document.getElementById("faturamentoAtual").addEventListener("input", calcularMetas);
     document.getElementById("metaPessoal").addEventListener("input", calcularMetas);
     document.getElementById("diasRestantes").addEventListener("input", calcularMetas);
+    document.getElementById("valorMedioVenda").addEventListener("input", calcularMetas);
 
+    atualizarInterfaceObjetivoFixo();
+    atualizarBannerPlano();
     preencherDiasAutomatico();
   </script>
 </body>
