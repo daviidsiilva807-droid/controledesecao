@@ -3,21 +3,43 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  
   <title>Acessórios</title>
   <style>
-    body { font-family: Arial, sans-serif; background: #f4f4f4; padding: 20px; }
-    h1 { margin-bottom: 20px; }
-    .input-area { margin-bottom: 20px; }
-    input, button, textarea, select { padding: 8px; font-size: 14px; }
-    button { margin-left: 10px; cursor: pointer; }
-    .produto { background: #fff; border: 1px solid #ccc; border-radius: 8px; padding: 15px; margin-bottom: 15px; }
-    .categorias { display: flex; gap: 15px; flex-wrap: wrap; margin-top: 10px; }
-    .categoria { display: flex; flex-direction: column; align-items: center; }
-    .categoria input { width: 60px; text-align: center; margin-top: 5px; border: 2px solid #ccc; border-radius: 5px; }
-    .categoria input.faltando { border-color: red; background: #ffe5e5; }
-    textarea { width: 100%; margin-top: 10px; resize: vertical; }
-    #finalizados { margin-top: 30px; padding: 15px; background: #e8ffe8; border: 2px solid #4CAF50; border-radius: 8px; }
-    #finalizados h2 { margin-top: 0; }
+    * { box-sizing: border-box; }
+    body { font-family: Arial, sans-serif; background: linear-gradient(rgba(0, 0, 0, 0.28), rgba(0, 0, 0, 0.28)), url("img/logoadidas.png") center / cover fixed no-repeat; background-color: #f4f4f4; color: #1e1e1e; padding: 14px; max-width: 1100px; margin: 0 auto; }
+    h1 { margin-bottom: 16px; font-size: clamp(1.4rem, 5vw, 2rem); }
+    .input-area { margin-bottom: 18px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; background: #fff; border: 1px solid #ddd; border-radius: 12px; padding: 12px; }
+    .input-area label { font-weight: bold; }
+    input, button, textarea, select { padding: 10px 12px; font-size: 15px; }
+    input[type="text"], select { flex: 1 1 220px; min-height: 42px; border: 1px solid #ccc; border-radius: 8px; background: #fff; }
+    button { margin-left: 0; cursor: pointer; min-height: 44px; border: none; border-radius: 8px; background: #0f766e; color: #fff; font-weight: bold; }
+    .produto { background: #fff; border: 1px solid #d7d7d7; border-radius: 12px; padding: 14px; margin-bottom: 14px; box-shadow: 0 2px 6px rgba(0,0,0,0.06); }
+    .categorias { display: grid; gap: 10px; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); margin-top: 10px; }
+    .categoria { display: flex; flex-direction: column; align-items: center; border: 1px solid #ececec; border-radius: 10px; padding: 8px; background: #fafafa; }
+    .campo-quantidade { display: flex; flex-direction: column; align-items: center; }
+    .campo-titulo { font-size: 12px; font-weight: bold; color: #333; margin-top: 6px; }
+    .number-stepper { display: flex; align-items: center; gap: 6px; margin-top: 5px; }
+    .categoria input { width: 62px; height: 36px; text-align: center; border: 2px solid #ccc; border-radius: 6px; }
+    .step-btn { width: 36px; height: 36px; border: 1px solid #aaa; border-radius: 8px; background: #fff; cursor: pointer; margin-left: 0; padding: 0; font-size: 20px; line-height: 1; color: #222; }
+    .categoria input.faltando { border-color: #e11d48; background: #ffe5e5; }
+    textarea { width: 100%; min-height: 90px; margin-top: 10px; resize: vertical; border: 1px solid #ccc; border-radius: 8px; }
+    #finalizados { margin-top: 24px; padding: 12px; background: #e8ffe8; border: 2px solid #4CAF50; border-radius: 10px; }
+    .toggle-finalizados { width: 100%; background: #2e7d32; }
+    #listaFinalizadosWrapper { margin-top: 10px; display: none; }
+    .finalizado-item { background: #fff; border: 1px solid #c6e6c8; border-radius: 8px; margin-bottom: 10px; overflow: hidden; }
+    .finalizado-item summary { padding: 10px 12px; cursor: pointer; font-weight: bold; }
+    .finalizado-item .produto { margin: 0; border: none; border-top: 1px solid #ececec; border-radius: 0; box-shadow: none; }
+
+    @media (max-width: 700px) {
+      body { padding: 10px; }
+      .input-area { flex-direction: column; align-items: stretch; }
+      .input-area button { width: 100%; }
+      .categorias { grid-template-columns: 1fr; }
+      .step-btn { width: 40px; height: 40px; }
+      .categoria input { width: 64px; height: 40px; }
+    }
   </style>
 </head>
 <body>
@@ -41,11 +63,61 @@
   <div id="listaProdutos"></div>
 
   <div id="finalizados">
-    <h2>Produtos Finalizados</h2>
-    <div id="listaFinalizados"></div>
+    <button type="button" id="toggleFinalizados" class="toggle-finalizados" onclick="alternarFinalizados()">Produtos Finalizados (0)</button>
+    <div id="listaFinalizadosWrapper">
+      <div id="listaFinalizados"></div>
+    </div>
   </div>
 
   <script>
+    function criarControleNumero(placeholder) {
+      const container = document.createElement("div");
+      container.className = "campo-quantidade";
+
+      const titulo = document.createElement("span");
+      titulo.className = "campo-titulo";
+      titulo.textContent = placeholder;
+
+      const wrapper = document.createElement("div");
+      wrapper.className = "number-stepper";
+
+      const menos = document.createElement("button");
+      menos.type = "button";
+      menos.className = "step-btn";
+      menos.textContent = "-";
+
+      const input = document.createElement("input");
+      input.type = "number";
+      input.min = "0";
+      input.value = "0";
+      input.placeholder = placeholder;
+
+      const mais = document.createElement("button");
+      mais.type = "button";
+      mais.className = "step-btn";
+      mais.textContent = "+";
+
+      const alterar = (delta) => {
+        const atual = parseInt(input.value, 10);
+        const base = Number.isNaN(atual) ? 0 : atual;
+        const novoValor = Math.max(0, base + delta);
+        input.value = String(novoValor);
+        input.dispatchEvent(new Event("input"));
+      };
+
+      menos.addEventListener("click", () => alterar(-1));
+      mais.addEventListener("click", () => alterar(1));
+
+      wrapper.appendChild(menos);
+      wrapper.appendChild(input);
+      wrapper.appendChild(mais);
+
+      container.appendChild(titulo);
+      container.appendChild(wrapper);
+
+      return { wrapper: container, input };
+    }
+
     function adicionarProduto() {
       const codigo = document.getElementById("codigo").value.trim();
       const tipo = document.getElementById("tipo").value;
@@ -62,24 +134,22 @@
       const bloco = document.createElement("div");
       bloco.className = "categoria";
 
-      const inputArara = document.createElement("input");
-      inputArara.type = "number";
-      inputArara.placeholder = "Arara";
-      inputArara.addEventListener("input", () => {
-        if (inputArara.value === "" || inputArara.value === "0") {
-          inputArara.classList.add("faltando");
+      const controleSecao = criarControleNumero("Seção");
+      const inputSecao = controleSecao.input;
+      inputSecao.classList.add("faltando");
+      inputSecao.addEventListener("input", () => {
+        if (inputSecao.value === "" || inputSecao.value === "0") {
+          inputSecao.classList.add("faltando");
         } else {
-          inputArara.classList.remove("faltando");
+          inputSecao.classList.remove("faltando");
         }
       });
 
-      const inputEstoque = document.createElement("input");
-      inputEstoque.type = "number";
-      inputEstoque.placeholder = "Estoque";
+      const controleEstoque = criarControleNumero("Estoque");
 
       bloco.innerHTML = `<span>${tipo}</span>`;
-      bloco.appendChild(inputArara);
-      bloco.appendChild(inputEstoque);
+      bloco.appendChild(controleSecao.wrapper);
+      bloco.appendChild(controleEstoque.wrapper);
       categoriasDiv.appendChild(bloco);
 
       produtoDiv.appendChild(categoriasDiv);
@@ -99,13 +169,40 @@
       });
       produtoDiv.appendChild(confirmacao);
 
-      lista.appendChild(produtoDiv);
+      lista.prepend(produtoDiv);
       document.getElementById("codigo").value = "";
     }
 
+    function atualizarContadorFinalizados() {
+      const total = document.querySelectorAll("#listaFinalizados .finalizado-item").length;
+      const botao = document.getElementById("toggleFinalizados");
+      botao.textContent = `Produtos Finalizados (${total})`;
+    }
+
+    function alternarFinalizados() {
+      const wrapper = document.getElementById("listaFinalizadosWrapper");
+      wrapper.style.display = wrapper.style.display === "none" ? "block" : "none";
+    }
+
     function moverParaFinalizados(produtoDiv) {
+      const confirmacao = produtoDiv.lastElementChild;
+      if (confirmacao) {
+        confirmacao.remove();
+      }
+
+      const tituloProduto = produtoDiv.querySelector("h3") ? produtoDiv.querySelector("h3").textContent : "Produto finalizado";
+      const itemFinalizado = document.createElement("details");
+      itemFinalizado.className = "finalizado-item";
+
+      const resumo = document.createElement("summary");
+      resumo.textContent = tituloProduto;
+
+      itemFinalizado.appendChild(resumo);
+      itemFinalizado.appendChild(produtoDiv);
+
       const listaFinalizados = document.getElementById("listaFinalizados");
-      listaFinalizados.appendChild(produtoDiv);
+      listaFinalizados.prepend(itemFinalizado);
+      atualizarContadorFinalizados();
     }
   </script>
 </body>

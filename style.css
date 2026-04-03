@@ -1,94 +1,111 @@
+:root {
+  --amarelo: #ffc107;
+  --amarelo-hover: #ff9800;
+  --fundo-card: rgba(0, 0, 0, 0.45);
+}
+
 * {
-   margin: 0;
-   padding: 0; 
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
 body {
-      font-family: Arial, sans-serif;
-      background: url("img/malevola\ .png") no-repeat center fixed;
-      color: #fff;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      margin: 0;
-      z-index: 100;
-      background-size: cover;
-    }
-    .container {
-    
-      text-align: center;
-      background: rgba(0,0,0,0.4);
-      padding: 40px;
-      border-radius: 12px;
-      box-shadow: 0 0 15px rgba(0,0,0,0.5);
-      
-    }
-    h1 {
-      font-size: 2.5em;
-      margin-bottom: 10px;
-    }
-    h2 {
-      font-size: 1.5em;
-      margin-bottom: 30px;
-    }
-    input {
-      padding: 10px;
-      font-size: 16px;
-      border-radius: 6px;
-      border: none;
-      margin-bottom: 20px;
-      width: 250px;
-      text-align: center;
-    }
-    button {
-      padding: 12px 20px;
-      font-size: 16px;
-      border: none;
-      border-radius: 6px;
-      background: #FFC107;
-      color: #333;
-      cursor: pointer;
-      transition: 0.3s;
-    }
-    button:hover {
-      background: #FF9800;
-    }
-    .menu {
-      margin-top: 30px;
-      display: flex;
-      gap: 20px;
-      justify-content: center;
-    }
-    .menu a {
-      text-decoration: none;
-      padding: 15px 25px;
-      background: #fff;
-      color: #333;
-      border-radius: 8px;
-      font-weight: bold;
-      transition: 0.3s;
-    }
-    .menu a:hover {
-      background: #ddd;
-    }
+  font-family: Arial, sans-serif;
+  background: url("img/malevola\ .png") no-repeat center fixed;
+  background-size: cover;
+  color: #fff;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 18px;
+}
+
+.container {
+  width: min(520px, 100%);
+  text-align: center;
+  background: var(--fundo-card);
+  padding: clamp(18px, 4.5vw, 40px);
+  border-radius: 14px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
+}
+
+h1 {
+  font-size: clamp(1.6rem, 6vw, 2.4rem);
+  margin-bottom: 10px;
+  line-height: 1.15;
+}
+
+h2 {
+  font-size: clamp(1.05rem, 4.5vw, 1.4rem);
+  margin-bottom: 20px;
+}
+
 input {
-  width: 80%; /* <-- antes era 250px, agora ocupa 80% da tela */
-  max-width: 300px; /* limite para não ficar exagerado em telas grandes */
+  width: min(100%, 360px);
+  padding: 12px 14px;
+  font-size: 16px;
+  border-radius: 10px;
+  border: none;
+  margin-bottom: 14px;
+  text-align: center;
 }
 
 button {
-  width: 80%;
-  max-width: 200px;
+  width: min(100%, 220px);
+  min-height: 46px;
+  padding: 10px 16px;
+  font-size: 16px;
+  border: none;
+  border-radius: 10px;
+  background: var(--amarelo);
+  color: #333;
+  cursor: pointer;
+  transition: background 0.2s ease;
 }
-@media (max-width: 600px) {
-  h1 {
-    font-size: 1.8em; /* reduz título em telas pequenas */
+
+button:hover {
+  background: var(--amarelo-hover);
+}
+
+.menu {
+  margin-top: 26px;
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.menu a {
+  text-decoration: none;
+  padding: 12px 18px;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #fff;
+  color: #333;
+  border-radius: 10px;
+  font-weight: bold;
+  transition: background 0.2s ease;
+}
+
+.menu a:hover {
+  background: #e9e9e9;
+}
+
+@media (max-width: 640px) {
+  body {
+    align-items: flex-start;
+    padding-top: 24px;
   }
-  h2 {
-    font-size: 1.2em;
+
+  .menu {
+    flex-direction: column;
   }
-  .container {
-    padding: 20px; /* menos espaço para caber melhor */
+
+  .menu a {
+    width: 100%;
   }
 }
