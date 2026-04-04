@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data:; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self'">
+  <meta name="referrer" content="no-referrer">
+  <title>Clientes - Controle de Secao</title>
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: linear-gradient(rgba(0, 0, 0, 0.26), rgba(0, 0, 0, 0.26)), url("img/logoadidas.png") center / cover fixed no-repeat;
+      color: #0f172a;
+      padding: 14px;
+    }
+
+    .page {
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    .back-link {
+      display: inline-flex;
+      min-height: 42px;
+      align-items: center;
+      justify-content: center;
+      padding: 8px 12px;
+      border-radius: 10px;
+      text-decoration: none;
+      background: #1d4ed8;
+      color: #fff;
+      font-weight: bold;
+      margin-bottom: 12px;
+    }
+
+    .header {
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 14px;
+      padding: 14px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+      margin-bottom: 12px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(1.4rem, 5vw, 2rem);
+    }
+
+    .subtitle {
+      margin-top: 8px;
+      font-size: 14px;
+      color: #475569;
+    }
+
+    .tabs {
+      margin-top: 14px;
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .tab-btn {
+      min-height: 42px;
+      border: 1px solid #cbd5e1;
+      border-radius: 10px;
+      background: #f8fafc;
+      color: #0f172a;
+      padding: 8px 12px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .tab-btn.active {
+      background: #0f766e;
+      border-color: #0f766e;
+      color: #fff;
+    }
+
+    .panel {
+      display: none;
+      margin-top: 12px;
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 14px;
+      padding: 14px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.06);
+    }
+
+    .panel.active {
+      display: block;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 10px;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .field label {
+      font-weight: bold;
+      font-size: 14px;
+      color: #334155;
+    }
+
+    .field input,
+    .field textarea {
+      min-height: 42px;
+      border: 1px solid #cbd5e1;
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-size: 14px;
+      font-family: inherit;
+    }
+
+    .field textarea {
+      min-height: 100px;
+      resize: vertical;
+    }
+
+    .actions {
+      margin-top: 10px;
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      min-height: 42px;
+      border: none;
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .btn.primary {
+      background: #0f766e;
+      color: #fff;
+    }
+
+    .btn.secondary {
+      background: #e2e8f0;
+      color: #0f172a;
+    }
+
+    .list {
+      margin-top: 10px;
+      display: grid;
+      gap: 10px;
+    }
+
+    .item {
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 12px;
+      background: #f8fafc;
+    }
+
+    .item-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .item-title {
+      margin: 0;
+      font-size: 16px;
+    }
+
+    .item-line {
+      margin-top: 6px;
+      color: #334155;
+      font-size: 14px;
+      line-height: 1.45;
+      white-space: pre-wrap;
+    }
+
+    .item-actions {
+      margin-top: 10px;
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .chip-btn {
+      border: 1px solid #cbd5e1;
+      background: #fff;
+      color: #0f172a;
+      border-radius: 999px;
+      min-height: 34px;
+      padding: 6px 12px;
+      font-weight: bold;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+
+    .chip-btn.whatsapp {
+      border-color: #86efac;
+      background: #dcfce7;
+      color: #14532d;
+    }
+
+    .chip-btn.remove {
+      border-color: #fecaca;
+      background: #fee2e2;
+      color: #991b1b;
+    }
+
+    .empty {
+      margin-top: 8px;
+      color: #64748b;
+      font-size: 14px;
+    }
+
+    .status {
+      margin-top: 10px;
+      font-size: 14px;
+      font-weight: bold;
+    }
+
+    .status.ok { color: #166534; }
+    .status.error { color: #b91c1c; }
+
+    @media (max-width: 700px) {
+      body { padding: 10px; }
+      .tabs .tab-btn { width: 100%; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <a class="back-link" href="dashboard.html">&#8592; Voltar ao Dashboard</a>
+
+    <div class="header">
+      <h1>&#128101; Area de Clientes</h1>
+      <p class="subtitle">Gerencie cadastro de clientes, clientes cadastrados e reservas de clientes.</p>
+
+      <div class="tabs">
+        <button id="tabCadastro" class="tab-btn active" type="button" onclick="abrirPainel('cadastro')">Cadastrar clientes</button>
+        <button id="tabCadastrados" class="tab-btn" type="button" onclick="abrirPainel('cadastrados')">Clientes cadastrados</button>
+        <button id="tabReservas" class="tab-btn" type="button" onclick="abrirPainel('reservas')">Reserva clientes</button>
+      </div>
+    </div>
+
+    <section id="painelCadastro" class="panel active">
+      <h2>Cadastrar clientes</h2>
+      <div class="form-grid">
+        <div class="field">
+          <label for="clienteNome">Nome do cliente</label>
+          <input id="clienteNome" type="text" maxlength="80" placeholder="Ex: Joao da Silva">
+        </div>
+        <div class="field">
+          <label for="clienteNumero">Numero</label>
+          <input id="clienteNumero" type="tel" maxlength="20" placeholder="Ex: 11999998888">
+        </div>
+        <div class="field">
+          <label for="clienteLoja">Loja</label>
+          <input id="clienteLoja" type="text" maxlength="80" placeholder="Ex: Shopping Central">
+        </div>
+      </div>
+      <div class="actions">
+        <button class="btn primary" type="button" onclick="cadastrarCliente()">Salvar cliente</button>
+        <button class="btn secondary" type="button" onclick="limparFormularioCliente()">Limpar</button>
+      </div>
+      <div id="statusCadastro" class="status"></div>
+    </section>
+
+    <section id="painelCadastrados" class="panel">
+      <h2>Clientes cadastrados</h2>
+      <div id="listaClientes" class="list"></div>
+      <div id="vazioClientes" class="empty">Nenhum cliente cadastrado ainda.</div>
+    </section>
+
+    <section id="painelReservas" class="panel">
+      <h2>Reserva clientes</h2>
+      <div class="form-grid">
+        <div class="field">
+          <label for="reservaNome">Nome do cliente</label>
+          <input id="reservaNome" type="text" maxlength="80" placeholder="Ex: Joao da Silva">
+        </div>
+        <div class="field">
+          <label for="reservaProduto">Produto</label>
+          <input id="reservaProduto" type="text" maxlength="100" placeholder="Ex: Tenis Campus 00s">
+        </div>
+        <div class="field">
+          <label for="reservaTamanho">Tamanho</label>
+          <input id="reservaTamanho" type="text" maxlength="10" placeholder="Ex: 40">
+        </div>
+        <div class="field">
+          <label for="reservaData">Data</label>
+          <input id="reservaData" type="date">
+        </div>
+      </div>
+      <div class="actions">
+        <button class="btn primary" type="button" onclick="adicionarReserva()">Salvar reserva</button>
+        <button class="btn secondary" type="button" onclick="limparFormularioReserva()">Limpar</button>
+      </div>
+      <div id="statusReserva" class="status"></div>
+
+      <div id="listaReservas" class="list"></div>
+      <div id="vazioReservas" class="empty">Nenhuma reserva cadastrada ainda.</div>
+    </section>
+  </div>
+
+  <script src="auth-db.js"></script>
+  <script>
+    const sessao = AuthDB.exigirLogin();
+    const CLIENTES_KEY = `controleSecao_clientes_v1_${sessao.login}`;
+    const RESERVAS_KEY = `controleSecao_reservas_v1_${sessao.login}`;
+
+    function abrirPainel(nomePainel) {
+      const tabs = {
+        cadastro: document.getElementById("tabCadastro"),
+        cadastrados: document.getElementById("tabCadastrados"),
+        reservas: document.getElementById("tabReservas")
+      };
+
+      const paineis = {
+        cadastro: document.getElementById("painelCadastro"),
+        cadastrados: document.getElementById("painelCadastrados"),
+        reservas: document.getElementById("painelReservas")
+      };
+
+      Object.keys(tabs).forEach((chave) => {
+        tabs[chave].classList.toggle("active", chave === nomePainel);
+        paineis[chave].classList.toggle("active", chave === nomePainel);
+      });
+    }
+
+    function lerStorage(chave) {
+      try {
+        const bruto = localStorage.getItem(chave);
+        if (!bruto) {
+          return [];
+        }
+
+        const lista = JSON.parse(bruto);
+        return Array.isArray(lista) ? lista : [];
+      } catch (erro) {
+        return [];
+      }
+    }
+
+    function gravarStorage(chave, lista) {
+      localStorage.setItem(chave, JSON.stringify(lista));
+    }
+
+    function setStatus(idElemento, mensagem, tipo) {
+      const status = document.getElementById(idElemento);
+      status.textContent = mensagem;
+      status.className = `status ${tipo}`;
+    }
+
+    function limparStatus(idElemento) {
+      const status = document.getElementById(idElemento);
+      status.textContent = "";
+      status.className = "status";
+    }
+
+    function normalizarTelefone(telefone) {
+      const digitos = String(telefone || "").replace(/\D/g, "");
+      if (!digitos) {
+        return "";
+      }
+
+      return digitos.startsWith("55") ? digitos : `55${digitos}`;
+    }
+
+    function telefoneValido(telefone) {
+      const digitos = String(telefone || "").replace(/\D/g, "");
+      return digitos.length === 10 || digitos.length === 11 || digitos.length === 12 || digitos.length === 13;
+    }
+
+    function formatarTelefoneVisual(telefone) {
+      const digitos = String(telefone || "").replace(/\D/g, "");
+      if (digitos.length === 11) {
+        return `(${digitos.slice(0, 2)}) ${digitos.slice(2, 7)}-${digitos.slice(7)}`;
+      }
+
+      if (digitos.length === 10) {
+        return `(${digitos.slice(0, 2)}) ${digitos.slice(2, 6)}-${digitos.slice(6)}`;
+      }
+
+      return digitos;
+    }
+
+    function limparFormularioCliente() {
+      document.getElementById("clienteNome").value = "";
+      document.getElementById("clienteNumero").value = "";
+      document.getElementById("clienteLoja").value = "";
+      limparStatus("statusCadastro");
+    }
+
+    function cadastrarCliente() {
+      const nome = document.getElementById("clienteNome").value.trim();
+      const numero = document.getElementById("clienteNumero").value.trim();
+      const loja = document.getElementById("clienteLoja").value.trim();
+
+      if (!nome || !numero || !loja) {
+        setStatus("statusCadastro", "Informe nome, numero e loja do cliente.", "error");
+        return;
+      }
+
+      if (!telefoneValido(numero)) {
+        setStatus("statusCadastro", "Numero invalido. Informe DDD + numero.", "error");
+        return;
+      }
+
+      const clientes = lerStorage(CLIENTES_KEY);
+      clientes.unshift({
+        id: Date.now(),
+        nome,
+        numero,
+        loja,
+        criadoEm: new Date().toISOString()
+      });
+
+      gravarStorage(CLIENTES_KEY, clientes);
+      limparFormularioCliente();
+      setStatus("statusCadastro", "Cliente cadastrado com sucesso.", "ok");
+      renderizarClientes();
+      abrirPainel("cadastrados");
+    }
+
+    function removerCliente(id) {
+      const clientes = lerStorage(CLIENTES_KEY).filter((cliente) => cliente.id !== id);
+      gravarStorage(CLIENTES_KEY, clientes);
+      renderizarClientes();
+    }
+
+    function renderizarClientes() {
+      const clientes = lerStorage(CLIENTES_KEY);
+      const lista = document.getElementById("listaClientes");
+      const vazio = document.getElementById("vazioClientes");
+      lista.innerHTML = "";
+
+      vazio.style.display = clientes.length === 0 ? "block" : "none";
+
+      clientes.forEach((cliente) => {
+        const numeroCliente = cliente.numero || cliente.telefone || "";
+        const lojaCliente = cliente.loja || cliente.observacao || "-";
+        const numeroWhatsapp = normalizarTelefone(numeroCliente);
+        const card = document.createElement("div");
+        card.className = "item";
+
+        const topo = document.createElement("div");
+        topo.className = "item-top";
+
+        const titulo = document.createElement("h3");
+        titulo.className = "item-title";
+        titulo.textContent = cliente.nome;
+
+        const linhaTelefone = document.createElement("div");
+        linhaTelefone.className = "item-line";
+        linhaTelefone.textContent = `Numero: ${formatarTelefoneVisual(numeroCliente)}`;
+
+        const linhaObservacao = document.createElement("div");
+        linhaObservacao.className = "item-line";
+        linhaObservacao.textContent = `Loja: ${lojaCliente}`;
+
+        const acoes = document.createElement("div");
+        acoes.className = "item-actions";
+
+        const linkWhatsapp = document.createElement("a");
+        linkWhatsapp.className = "chip-btn whatsapp";
+        linkWhatsapp.href = `https://wa.me/${numeroWhatsapp}`;
+        linkWhatsapp.target = "_blank";
+        linkWhatsapp.rel = "noopener noreferrer";
+        linkWhatsapp.textContent = "Mensagem WhatsApp";
+
+        const botaoExcluir = document.createElement("button");
+        botaoExcluir.className = "chip-btn remove";
+        botaoExcluir.type = "button";
+        botaoExcluir.textContent = "Excluir";
+
+        topo.appendChild(titulo);
+        acoes.appendChild(linkWhatsapp);
+        acoes.appendChild(botaoExcluir);
+        card.appendChild(topo);
+        card.appendChild(linhaTelefone);
+        card.appendChild(linhaObservacao);
+        card.appendChild(acoes);
+
+        botaoExcluir.addEventListener("click", () => removerCliente(cliente.id));
+        lista.appendChild(card);
+      });
+    }
+
+    function limparFormularioReserva() {
+      document.getElementById("reservaNome").value = "";
+      document.getElementById("reservaProduto").value = "";
+      document.getElementById("reservaTamanho").value = "";
+      document.getElementById("reservaData").value = "";
+      limparStatus("statusReserva");
+    }
+
+    function formatarData(dataISO) {
+      if (!dataISO) {
+        return "-";
+      }
+
+      return new Date(`${dataISO}T00:00:00`).toLocaleDateString("pt-BR");
+    }
+
+    function adicionarReserva() {
+      const nomeCliente = document.getElementById("reservaNome").value.trim();
+      const produto = document.getElementById("reservaProduto").value.trim();
+      const tamanho = document.getElementById("reservaTamanho").value.trim();
+      const data = document.getElementById("reservaData").value;
+
+      if (!nomeCliente || !produto || !tamanho || !data) {
+        setStatus("statusReserva", "Preencha nome, produto, tamanho e data.", "error");
+        return;
+      }
+
+      const reservas = lerStorage(RESERVAS_KEY);
+      reservas.unshift({
+        id: Date.now(),
+        nomeCliente,
+        produto,
+        tamanho,
+        data,
+        criadoEm: new Date().toISOString()
+      });
+
+      gravarStorage(RESERVAS_KEY, reservas);
+      limparFormularioReserva();
+      setStatus("statusReserva", "Reserva cadastrada com sucesso.", "ok");
+      renderizarReservas();
+    }
+
+    function removerReserva(id) {
+      const reservas = lerStorage(RESERVAS_KEY).filter((reserva) => reserva.id !== id);
+      gravarStorage(RESERVAS_KEY, reservas);
+      renderizarReservas();
+    }
+
+    function renderizarReservas() {
+      const reservas = lerStorage(RESERVAS_KEY);
+      const lista = document.getElementById("listaReservas");
+      const vazio = document.getElementById("vazioReservas");
+      lista.innerHTML = "";
+
+      vazio.style.display = reservas.length === 0 ? "block" : "none";
+
+      reservas.forEach((reserva) => {
+        const card = document.createElement("div");
+        card.className = "item";
+
+        const topo = document.createElement("div");
+        topo.className = "item-top";
+
+        const titulo = document.createElement("h3");
+        titulo.className = "item-title";
+        titulo.textContent = reserva.nomeCliente;
+
+        const linhaProduto = document.createElement("div");
+        linhaProduto.className = "item-line";
+        linhaProduto.textContent = `Produto: ${reserva.produto}`;
+
+        const linhaTamanho = document.createElement("div");
+        linhaTamanho.className = "item-line";
+        linhaTamanho.textContent = `Tamanho: ${reserva.tamanho}`;
+
+        const linhaData = document.createElement("div");
+        linhaData.className = "item-line";
+        linhaData.textContent = `Data: ${formatarData(reserva.data)}`;
+
+        const acoes = document.createElement("div");
+        acoes.className = "item-actions";
+
+        const botaoExcluir = document.createElement("button");
+        botaoExcluir.className = "chip-btn remove";
+        botaoExcluir.type = "button";
+        botaoExcluir.textContent = "Excluir";
+
+        topo.appendChild(titulo);
+        acoes.appendChild(botaoExcluir);
+        card.appendChild(topo);
+        card.appendChild(linhaProduto);
+        card.appendChild(linhaTamanho);
+        card.appendChild(linhaData);
+        card.appendChild(acoes);
+
+        botaoExcluir.addEventListener("click", () => removerReserva(reserva.id));
+        lista.appendChild(card);
+      });
+    }
+
+    renderizarClientes();
+    renderizarReservas();
+  </script>
+</body>
+</html>

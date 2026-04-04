@@ -3,6 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data:; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self'">
+  <meta name="referrer" content="no-referrer">
   <title>Metas de Vendas</title>
   <style>
     * { box-sizing: border-box; }
@@ -230,11 +232,11 @@
       <div class="form-grid">
         <div class="field">
           <label for="faturamentoAtual">Faturamento atual no mes (R$)</label>
-          <input id="faturamentoAtual" type="number" min="0" step="0.01" value="0" placeholder="Ex: 35000">
+          <input id="faturamentoAtual" type="text" inputmode="decimal" value="0,00" placeholder="Ex: 35.000,00">
         </div>
         <div class="field">
           <label for="metaPessoal">Meta que deseja atingir (R$)</label>
-          <input id="metaPessoal" type="number" min="0" step="0.01" value="40000" placeholder="Ex: 56000">
+          <input id="metaPessoal" type="text" inputmode="decimal" value="40.000,00" placeholder="Ex: 56.000,00">
           <div id="objetivoNota" class="inline-note">Meta de objetivo nao fixada.</div>
         </div>
         <div class="field">
@@ -243,7 +245,7 @@
         </div>
         <div class="field">
           <label for="valorMedioVenda">Valor medio por venda (R$)</label>
-          <input id="valorMedioVenda" type="number" min="0" step="0.01" value="0" placeholder="Ex: 120">
+          <input id="valorMedioVenda" type="text" inputmode="decimal" value="0,00" placeholder="Ex: 120,00">
         </div>
       </div>
 
@@ -321,6 +323,50 @@
       return valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
     }
 
+    function formatarNumeroBR(valor) {
+      return Number(valor || 0).toLocaleString("pt-BR", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      });
+    }
+
+    function normalizarMoedaParaNumero(valor) {
+      const somenteDigitos = String(valor || "").replace(/\D/g, "");
+      if (!somenteDigitos) {
+        return 0;
+      }
+
+      return Number(somenteDigitos) / 100;
+    }
+
+    function obterValorCampoMoeda(idCampo) {
+      const campo = document.getElementById(idCampo);
+      return Math.max(0, normalizarMoedaParaNumero(campo.value));
+    }
+
+    function aplicarMascaraMoeda(campo) {
+      const valor = normalizarMoedaParaNumero(campo.value);
+      campo.value = formatarNumeroBR(valor);
+    }
+
+    function configurarCamposMoeda() {
+      const idsMoeda = ["faturamentoAtual", "metaPessoal", "valorMedioVenda"];
+
+      idsMoeda.forEach((idCampo) => {
+        const campo = document.getElementById(idCampo);
+        if (!campo) {
+          return;
+        }
+
+        aplicarMascaraMoeda(campo);
+        campo.addEventListener("input", () => {
+          aplicarMascaraMoeda(campo);
+          calcularMetas();
+        });
+        campo.addEventListener("blur", () => aplicarMascaraMoeda(campo));
+      });
+    }
+
     function formatarPercentual(valor) {
       return `${valor.toLocaleString("pt-BR", { minimumFractionDigits: 1, maximumFractionDigits: 2 })}%`;
     }
@@ -376,7 +422,7 @@
         return;
       }
 
-      inputMeta.value = objetivo.valor;
+      inputMeta.value = formatarNumeroBR(objetivo.valor);
       inputMeta.readOnly = true;
       nota.textContent = `Meta fixada em ${formatarMoeda(objetivo.valor)}.`;
       resumo.textContent = formatarMoeda(objetivo.valor);
@@ -393,7 +439,7 @@
         return;
       }
 
-      const valor = Math.max(0, Number(document.getElementById("metaPessoal").value) || 0);
+      const valor = obterValorCampoMoeda("metaPessoal");
       if (valor <= 0) {
         alert("Informe uma meta de objetivo maior que zero antes de fixar.");
         return;
@@ -442,10 +488,10 @@
     }
 
     function calcularMetas() {
-      const faturamentoAtual = Math.max(0, Number(document.getElementById("faturamentoAtual").value) || 0);
-      const metaPessoal = Math.max(0, Number(document.getElementById("metaPessoal").value) || 0);
+      const faturamentoAtual = obterValorCampoMoeda("faturamentoAtual");
+      const metaPessoal = obterValorCampoMoeda("metaPessoal");
       const diasRestantes = Math.max(1, Number(document.getElementById("diasRestantes").value) || 1);
-      const valorMedioVenda = Math.max(0, Number(document.getElementById("valorMedioVenda").value) || 0);
+      const valorMedioVenda = obterValorCampoMoeda("valorMedioVenda");
 
       let faixaAtual = null;
       for (const meta of metas) {
@@ -501,10 +547,8 @@
       });
     }
 
-    document.getElementById("faturamentoAtual").addEventListener("input", calcularMetas);
-    document.getElementById("metaPessoal").addEventListener("input", calcularMetas);
     document.getElementById("diasRestantes").addEventListener("input", calcularMetas);
-    document.getElementById("valorMedioVenda").addEventListener("input", calcularMetas);
+    configurarCamposMoeda();
 
     atualizarInterfaceObjetivoFixo();
     atualizarBannerPlano();

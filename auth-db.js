@@ -1,8 +1,13 @@
 (function () {
   const DB_KEY = "controleSecao_usuarios_v1";
   const SESSION_KEY = "controleSecao_sessao_v1";
+  const LOGIN_ATTEMPTS_KEY = "controleSecao_login_tentativas_v1";
   const ADMIN_LOGIN = "daviidsiilva807";
   const ADMIN_SENHA = "L4ndeH4ck@100";
+  const LOGIN_REGEX = /^[a-z0-9._-]{3,30}$/i;
+  const MAX_LOGIN_TENTATIVAS = 5;
+  const BLOQUEIO_MINUTOS = 15;
+  const SESSAO_TTL_HORAS = 8;
   const DIA_EM_MS = 1000 * 60 * 60 * 24;
   const PLANOS = {
     30: { dias: 30, valor: 20 },
@@ -11,6 +16,75 @@
 
   function normalizarLogin(login) {
     return (login || "").trim().toLowerCase();
+  }
+
+  function loginValido(login) {
+    return LOGIN_REGEX.test(normalizarLogin(login));
+  }
+
+  function carregarTentativasLogin() {
+    const bruto = localStorage.getItem(LOGIN_ATTEMPTS_KEY);
+    if (!bruto) {
+      return {};
+    }
+
+    try {
+      const dados = JSON.parse(bruto);
+      return dados && typeof dados === "object" ? dados : {};
+    } catch (erro) {
+      return {};
+    }
+  }
+
+  function salvarTentativasLogin(tentativas) {
+    localStorage.setItem(LOGIN_ATTEMPTS_KEY, JSON.stringify(tentativas));
+  }
+
+  function limparTentativasExpiradas() {
+    const tentativas = carregarTentativasLogin();
+    const agora = Date.now();
+
+    Object.keys(tentativas).forEach((login) => {
+      const item = tentativas[login] || {};
+      if (!item.bloqueadoAte || Number(item.bloqueadoAte) < agora) {
+        delete tentativas[login];
+      }
+    });
+
+    salvarTentativasLogin(tentativas);
+  }
+
+  function obterStatusTentativa(login) {
+    limparTentativasExpiradas();
+    const tentativas = carregarTentativasLogin();
+    return tentativas[normalizarLogin(login)] || { erros: 0, bloqueadoAte: 0 };
+  }
+
+  function registrarFalhaLogin(login) {
+    const loginNormalizado = normalizarLogin(login);
+    const tentativas = carregarTentativasLogin();
+    const atual = tentativas[loginNormalizado] || { erros: 0, bloqueadoAte: 0 };
+    const erros = Number(atual.erros || 0) + 1;
+
+    if (erros >= MAX_LOGIN_TENTATIVAS) {
+      atual.erros = 0;
+      atual.bloqueadoAte = Date.now() + (BLOQUEIO_MINUTOS * 60 * 1000);
+    } else {
+      atual.erros = erros;
+      atual.bloqueadoAte = 0;
+    }
+
+    tentativas[loginNormalizado] = atual;
+    salvarTentativasLogin(tentativas);
+  }
+
+  function limparFalhasLogin(login) {
+    const loginNormalizado = normalizarLogin(login);
+    const tentativas = carregarTentativasLogin();
+    if (tentativas[loginNormalizado]) {
+      delete tentativas[loginNormalizado];
+      salvarTentativasLogin(tentativas);
+    }
   }
 
   function obterPlanoPadrao(dias) {
@@ -123,7 +197,7 @@
         criadoPor: "sistema"
       });
     } else {
-      adminExistente.senha = ADMIN_SENHA;
+      adminExistente.senha = adminExistente.senha || ADMIN_SENHA;
       adminExistente.papel = "admin";
       adminExistente.ativo = true;
       adminExistente.vitalicio = true;
@@ -233,12 +307,26 @@
     garantirAdminPadrao();
 
     const loginNormalizado = normalizarLogin(login);
+
+    if (!loginValido(loginNormalizado)) {
+      return { ok: false, mensagem: "Login invalido. Use de 3 a 30 caracteres: letras, numeros, ponto, traço ou underscore." };
+    }
+
+    const tentativas = obterStatusTentativa(loginNormalizado);
+    if (Number(tentativas.bloqueadoAte || 0) > Date.now()) {
+      const minutosRestantes = Math.ceil((Number(tentativas.bloqueadoAte) - Date.now()) / 60000);
+      return { ok: false, mensagem: `Muitas tentativas invalidas. Tente novamente em ${Math.max(1, minutosRestantes)} minuto(s).` };
+    }
+
     const usuarios = carregarUsuarios();
 
     const usuario = usuarios.find((u) => normalizarLogin(u.login) === loginNormalizado && u.senha === senha);
     if (!usuario) {
+      registrarFalhaLogin(loginNormalizado);
       return { ok: false, mensagem: "Login ou senha invalidos." };
     }
+
+    limparFalhasLogin(loginNormalizado);
 
     const status = obterStatusUsuario(usuario.login);
     if (status && !status.ativo) {
@@ -254,7 +342,8 @@
       assinaturaInicioEm: usuario.assinaturaInicioEm || null,
       assinaturaFimEm: usuario.assinaturaFimEm || null,
       diasRestantes: status ? status.diasRestantes : 0,
-      dataLogin: new Date().toISOString()
+      dataLogin: new Date().toISOString(),
+      expiraEm: new Date(Date.now() + (SESSAO_TTL_HORAS * 60 * 60 * 1000)).toISOString()
     };
 
     localStorage.setItem(SESSION_KEY, JSON.stringify(sessao));
@@ -268,7 +357,17 @@
     }
 
     try {
-      return JSON.parse(bruto);
+      const sessao = JSON.parse(bruto);
+      if (!sessao || typeof sessao !== "object") {
+        return null;
+      }
+
+      if (!sessao.expiraEm || new Date(sessao.expiraEm).getTime() < Date.now()) {
+        localStorage.removeItem(SESSION_KEY);
+        return null;
+      }
+
+      return sessao;
     } catch (erro) {
       return null;
     }
@@ -310,6 +409,10 @@
     const loginNormalizado = normalizarLogin(login);
     if (!loginNormalizado) {
       return { ok: false, mensagem: "Informe um login." };
+    }
+
+    if (!loginValido(loginNormalizado)) {
+      return { ok: false, mensagem: "Login invalido. Use de 3 a 30 caracteres: letras, numeros, ponto, traço ou underscore." };
     }
 
     if (!senha || senha.trim().length < 4) {
