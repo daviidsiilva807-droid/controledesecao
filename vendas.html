@@ -150,6 +150,35 @@
       box-shadow: 0 6px 18px rgba(15, 118, 110, 0.14);
     }
 
+    .summary-card.meta-status {
+      transition: background-color 0.2s ease, border-color 0.2s ease;
+    }
+
+    .summary-card.meta-status.status-empty {
+      background: #f8fafc;
+      border-color: #cbd5e1;
+    }
+
+    .summary-card.meta-status.status-low {
+      background: #fff7ed;
+      border-color: #fdba74;
+    }
+
+    .summary-card.meta-status.status-mid {
+      background: #fefce8;
+      border-color: #facc15;
+    }
+
+    .summary-card.meta-status.status-near {
+      background: #ecfeff;
+      border-color: #67e8f9;
+    }
+
+    .summary-card.meta-status.status-hit {
+      background: #ecfdf5;
+      border-color: #86efac;
+    }
+
     .summary-label {
       font-size: 12px;
       color: #6b7280;
@@ -162,6 +191,12 @@
       font-size: 1.1rem;
       font-weight: bold;
       color: #111827;
+    }
+
+    .summary-note {
+      margin-top: 6px;
+      font-size: 12px;
+      color: #475569;
     }
 
     .table-wrap {
@@ -192,7 +227,19 @@
       color: #475569;
     }
 
-    tr.atingida {
+    tr.status-low {
+      background: #fff7ed;
+    }
+
+    tr.status-mid {
+      background: #fefce8;
+    }
+
+    tr.status-near {
+      background: #ecfeff;
+    }
+
+    tr.status-hit {
       background: #ecfdf5;
     }
 
@@ -282,6 +329,11 @@
         <div class="summary-label">Objetivo fixado</div>
         <div id="objetivoFixado" class="summary-value">Nenhum objetivo fixado</div>
       </div>
+      <div id="metaPessoalCard" class="summary-card meta-status status-empty">
+        <div class="summary-label">Status da meta pessoal</div>
+        <div id="metaPessoalStatus" class="summary-value">Sem meta definida</div>
+        <div id="metaPessoalProgresso" class="summary-note">Defina uma meta para acompanhar por cor.</div>
+      </div>
     </div>
 
     <div class="table-wrap">
@@ -303,7 +355,8 @@
   <script src="auth-db.js"></script>
   <script>
     const sessao = AuthDB.exigirLogin();
-    const OBJETIVO_FIXO_KEY = "controleSecao_objetivo_fixo_v1";
+    const OBJETIVO_FIXO_KEY = `controleSecao_objetivo_fixo_v1_${sessao.login}`;
+    const VENDAS_FORM_KEY = `controleSecao_vendas_form_v1_${sessao.login}`;
 
     const metas = [
       { valor: 40000, percentual: 0.5 },
@@ -362,8 +415,12 @@
         campo.addEventListener("input", () => {
           aplicarMascaraMoeda(campo);
           calcularMetas();
+          salvarEstadoFormulario();
         });
-        campo.addEventListener("blur", () => aplicarMascaraMoeda(campo));
+        campo.addEventListener("blur", () => {
+          aplicarMascaraMoeda(campo);
+          salvarEstadoFormulario();
+        });
       });
     }
 
@@ -377,6 +434,46 @@
       }
 
       return new Date(dataISO).toLocaleDateString("pt-BR");
+    }
+
+    function carregarEstadoFormulario() {
+      try {
+        const bruto = localStorage.getItem(VENDAS_FORM_KEY);
+        if (!bruto) {
+          return null;
+        }
+
+        const estado = JSON.parse(bruto);
+        return estado && typeof estado === "object" ? estado : null;
+      } catch (erro) {
+        return null;
+      }
+    }
+
+    function salvarEstadoFormulario() {
+      const estado = {
+        faturamentoAtual: obterValorCampoMoeda("faturamentoAtual"),
+        metaPessoal: obterValorCampoMoeda("metaPessoal"),
+        valorMedioVenda: obterValorCampoMoeda("valorMedioVenda"),
+        diasRestantes: Math.max(1, Number(document.getElementById("diasRestantes").value) || 1),
+        atualizadoEm: new Date().toISOString()
+      };
+
+      localStorage.setItem(VENDAS_FORM_KEY, JSON.stringify(estado));
+    }
+
+    function aplicarEstadoFormulario() {
+      const estado = carregarEstadoFormulario();
+      if (!estado) {
+        return false;
+      }
+
+      document.getElementById("faturamentoAtual").value = formatarNumeroBR(Math.max(0, Number(estado.faturamentoAtual) || 0));
+      document.getElementById("metaPessoal").value = formatarNumeroBR(Math.max(0, Number(estado.metaPessoal) || 0));
+      document.getElementById("valorMedioVenda").value = formatarNumeroBR(Math.max(0, Number(estado.valorMedioVenda) || 0));
+      document.getElementById("diasRestantes").value = Math.max(1, Number(estado.diasRestantes) || 1);
+
+      return true;
     }
 
     function carregarObjetivoFixo() {
@@ -435,6 +532,7 @@
       if (objetivoAtual) {
         limparObjetivoFixo();
         atualizarInterfaceObjetivoFixo();
+        salvarEstadoFormulario();
         calcularMetas();
         return;
       }
@@ -447,6 +545,7 @@
 
       salvarObjetivoFixo(valor);
       atualizarInterfaceObjetivoFixo();
+      salvarEstadoFormulario();
       calcularMetas();
     }
 
@@ -484,6 +583,7 @@
 
     function preencherDiasAutomatico() {
       document.getElementById("diasRestantes").value = calcularDiasRestantesMes();
+      salvarEstadoFormulario();
       calcularMetas();
     }
 
@@ -492,6 +592,9 @@
       const metaPessoal = obterValorCampoMoeda("metaPessoal");
       const diasRestantes = Math.max(1, Number(document.getElementById("diasRestantes").value) || 1);
       const valorMedioVenda = obterValorCampoMoeda("valorMedioVenda");
+      const cardMeta = document.getElementById("metaPessoalCard");
+      const textoStatusMeta = document.getElementById("metaPessoalStatus");
+      const textoProgressoMeta = document.getElementById("metaPessoalProgresso");
 
       let faixaAtual = null;
       for (const meta of metas) {
@@ -515,12 +618,36 @@
       const faltaMetaPessoal = Math.max(0, metaPessoal - faturamentoAtual);
       const porDiaMetaPessoal = faltaMetaPessoal / diasRestantes;
       const comissaoPorVenda = valorMedioVenda * (percentualAtual / 100);
+      const progressoMetaPessoal = metaPessoal > 0 ? Math.min(100, (faturamentoAtual / metaPessoal) * 100) : 0;
 
       document.getElementById("comissaoAtual").textContent = `${formatarMoeda(comissaoAtual)} (${formatarPercentual(percentualAtual)})`;
       document.getElementById("proximaMeta").textContent = proximaMeta ? `${formatarMoeda(proximaMeta.valor)} (${formatarPercentual(proximaMeta.percentual)})` : "Todas as metas oficiais atingidas";
       document.getElementById("faltaProxima").textContent = formatarMoeda(faltaParaProxima);
       document.getElementById("porDiaMetaPessoal").textContent = formatarMoeda(porDiaMetaPessoal);
       document.getElementById("comissaoPorVenda").textContent = valorMedioVenda > 0 ? `${formatarMoeda(comissaoPorVenda)} por venda` : "Informe o valor medio da venda";
+
+      cardMeta.className = "summary-card meta-status";
+      if (metaPessoal <= 0) {
+        cardMeta.classList.add("status-empty");
+        textoStatusMeta.textContent = "Sem meta definida";
+        textoProgressoMeta.textContent = "Defina uma meta para acompanhar por cor.";
+      } else if (progressoMetaPessoal >= 100) {
+        cardMeta.classList.add("status-hit");
+        textoStatusMeta.textContent = "Meta atingida";
+        textoProgressoMeta.textContent = `${formatarNumeroBR(progressoMetaPessoal)}% concluido`;
+      } else if (progressoMetaPessoal >= 85) {
+        cardMeta.classList.add("status-near");
+        textoStatusMeta.textContent = "Quase la";
+        textoProgressoMeta.textContent = `${formatarNumeroBR(progressoMetaPessoal)}% concluido`;
+      } else if (progressoMetaPessoal >= 50) {
+        cardMeta.classList.add("status-mid");
+        textoStatusMeta.textContent = "Progresso bom";
+        textoProgressoMeta.textContent = `${formatarNumeroBR(progressoMetaPessoal)}% concluido`;
+      } else {
+        cardMeta.classList.add("status-low");
+        textoStatusMeta.textContent = "Inicio da meta";
+        textoProgressoMeta.textContent = `${formatarNumeroBR(progressoMetaPessoal)}% concluido`;
+      }
 
       const body = document.getElementById("metasBody");
       body.innerHTML = "";
@@ -529,10 +656,17 @@
         const falta = Math.max(0, meta.valor - faturamentoAtual);
         const porDia = falta / diasRestantes;
         const atingida = falta === 0;
+        const percentualAtingido = meta.valor > 0 ? Math.min(100, (faturamentoAtual / meta.valor) * 100) : 0;
 
         const tr = document.createElement("tr");
-        if (atingida) {
-          tr.className = "atingida";
+        if (percentualAtingido >= 100) {
+          tr.className = "status-hit";
+        } else if (percentualAtingido >= 85) {
+          tr.className = "status-near";
+        } else if (percentualAtingido >= 50) {
+          tr.className = "status-mid";
+        } else {
+          tr.className = "status-low";
         }
 
         tr.innerHTML = `
@@ -545,14 +679,25 @@
 
         body.appendChild(tr);
       });
+
+      salvarEstadoFormulario();
     }
 
-    document.getElementById("diasRestantes").addEventListener("input", calcularMetas);
+    document.getElementById("diasRestantes").addEventListener("input", () => {
+      calcularMetas();
+      salvarEstadoFormulario();
+    });
     configurarCamposMoeda();
 
+    const estadoFormularioCarregado = aplicarEstadoFormulario();
     atualizarInterfaceObjetivoFixo();
     atualizarBannerPlano();
-    preencherDiasAutomatico();
+
+    if (!estadoFormularioCarregado) {
+      preencherDiasAutomatico();
+    } else {
+      calcularMetas();
+    }
   </script>
 </body>
 </html>
